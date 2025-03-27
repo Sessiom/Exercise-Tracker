@@ -66,9 +66,7 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   const { _id } = req.params;
 
   // Set the date to today if not provided 
-  const exerciseDate = date ? new Date(date + "T12:00:00.000-00:00") : new Date();
-  
-  console.log(exerciseDate)
+  const exerciseDate = date ? new Date(date) : new Date();
 
   // Check if the date is valid
   if (isNaN(exerciseDate.getTime())) {
@@ -82,12 +80,20 @@ app.post('/api/users/:_id/exercises', async (req, res) => {
   // Get username 
   const { username } = await User.findOne({_id})
 
+  const formattedDate = exerciseDate.toLocaleDateString('en-US', {
+    timeZone: 'UTC',
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    year: 'numeric'
+  }).replace(/,/g, '');
+
   const returnObj = {
     username,
     _id,
     description,
     duration: parseInt(duration),
-    date: exerciseDate.toDateString(), // Alter date to a more readable format
+    date: formattedDate, // Alter date to a more readable format
   }
 
   res.json(returnObj)
@@ -127,7 +133,13 @@ app.get('/api/users/:_id/logs', async (req, res) => {
   const returnArray = userExercises.map((item) => ({
     description: item.description,
     duration: item.duration,
-    date: item.date.toDateString(),
+    date: item.date.toLocaleDateString('en-US', {
+      timeZone: 'UTC',
+      weekday: 'short',
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric'
+    }).replace(/,/g, '')
   }));
   
   res.json({ 
